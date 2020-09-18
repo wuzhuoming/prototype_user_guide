@@ -1,4 +1,4 @@
-# **Quick start for CUHKPrototypeTuner**
+# **Manual for CUHKPrototypeTuner**
 
 ## Install CUHKPrototypeTuner
 
@@ -57,6 +57,7 @@
    ```
 
 4. Create file  ``config.yml`` with following content. Execute:
+
    ```bash
    cat << EOF > config.yml
    authorName: lscm
@@ -81,8 +82,9 @@
      gpuIndices: "0,1,2,3"
    EOF
    ```
-   
+
 5. Replace `bilm/training.py` and `train_elmo.py` to apply configuration from tuner and report performance metrics
+
 ```bash
 wget https://raw.githubusercontent.com/wuzhuoming/tutorial_file/master/training.py -O bilm/training.py && \
 wget https://raw.githubusercontent.com/wuzhuoming/tutorial_file/master/train_elmo.py -O bin/train_elmo.py 
@@ -98,7 +100,17 @@ wget https://raw.githubusercontent.com/wuzhuoming/tutorial_file/master/train_elm
    mkdir mbart && cd mbart
    ```
 
-2. Create file  ``search_space.json`` to define the search space of hyperparameters and hardware parameters. Execute: 
+2. Create user directory and download customized task file.
+
+   ```bash
+   mkdir user_dir
+   
+   wget https://raw.githubusercontent.com/wuzhuoming/tutorial_file/master/__init__.py -O user_dir/__init__.py
+   
+   wget https://raw.githubusercontent.com/wuzhuoming/tutorial_file/master/translation_multi_simple_epoch_nni.py -O user_dir/translation_multi_simple_epoch_nni.py
+   ```
+
+3. Create file  ``search_space.json`` to define the search space of hyperparameters and hardware parameters. Execute: 
 
    ```bash
    cat << EOF > search_space.json
@@ -106,7 +118,7 @@ wget https://raw.githubusercontent.com/wuzhuoming/tutorial_file/master/train_elm
        "dropout":{"_type":"choice","_value":[0.0,0.1,0.2,0.3]},
        "label_smooth":{"_type":"choice","_value":[0.1,0.2,0.3]},
        "lr":{"_type":"choice","_value":[0.00001,0.00002,0.00003,0.00004,0.00005,0.00006]},
-       "lr_scheduler":{"_type":"choice","_value":["inverse_square","linear"]},
+       "lr_scheduler":{"_type":"choice","_value":["inverse_sqrt","polynomial_decay"]},
        "warmup_update":{"_type":"choice","_value":[2500,3000,3500,4000,4500,5000]},
        "optimizer":{"_type":"choice","_value":["adagrad", "adam"]},
    
@@ -118,7 +130,7 @@ wget https://raw.githubusercontent.com/wuzhuoming/tutorial_file/master/train_elm
    EOF
    ```
 
-3. Create file  ``config.yml`` with following content. Execute:
+4. Create file  ``config.yml`` with following content. Execute:
 
    ```bash
    cat << EOF > config.yml
@@ -135,7 +147,7 @@ wget https://raw.githubusercontent.com/wuzhuoming/tutorial_file/master/train_elm
    tuner:
      builtinTunerName: CUHKPrototypeTuner
    trial:
-     command: ./run_mbart.sh
+     command: python wrap_program_mbart.py
      codeDir: .
      # specific the total number of GPU
      gpuNum: 4
@@ -144,44 +156,14 @@ wget https://raw.githubusercontent.com/wuzhuoming/tutorial_file/master/train_elm
      gpuIndices: "0,1,2,3"
    EOF
    ```
-   
-4. Download the modified source code of mBart:
-   ```bash
-   wget https://raw.githubusercontent.com/wuzhuoming/tutorial_file/master/translation_multi_simple_epoch.py
-   ```
 
-4. Create script``run_mbart.sh`` to run
+5. Download the tuner program "wrap_program_mbart.py"
 
    ```bash
-   cat << EOF > run_mbart.sh
-   data_dir=./data/processed
-   save_dir=./output_model
-   user_dir=./
-   langs=ar_AR,cs_CZ,de_DE,en_XX,es_XX,et_EE,fi_FI,fr_XX,gu_IN,hi_IN,it_IT,ja_XX,kk_KZ,ko_KR,lt_LT,lv_LV,my_MM,ne_NP,nl_XX,ro_RO,ru_RU,si_LK,tr_TR,vi_VN,zh_CN
-   
-   src=en_XX
-   tgt=ja_XX
-   
-   
-   mkdir -p $save_dir
-   
-   fairseq-train $data_dir \
-       --user-dir $user_dir \
-       --encoder-normalize-before \
-       --decoder-normalize-before  \
-       --arch mbart_large \
-       --task translation_multi_simple_epoch.py \
-       --source-lang $src \
-       --target-lang $tgt \
-       --criterion label_smoothed_cross_entropy \
-       --dataset-impl mmap  \
-       --max-tokens 768 --update-freq 2 --save-interval 1 \
-       --save-interval-updates 8000 --keep-interval-updates 10 --no-epoch-checkpoints --seed 222 --log-format simple \
-       --log-interval 2 --reset-optimizer --reset-meters --reset-dataloader --reset-lr-scheduler  \
-       --langs $langs --layernorm-embedding  --ddp-backend no_c10d --save-dir $save_dir
-   EOF
+   wget https://raw.githubusercontent.com/wuzhuoming/tutorial_file/master/wrap_program_mbart.py 
    ```
-6. The tuning is ready to [start](#start-tuning) 
+
+6. The tuning is ready to [start](#start-tuning).
 
 
 ### For MASS 
@@ -218,7 +200,7 @@ wget https://raw.githubusercontent.com/wuzhuoming/tutorial_file/master/train_elm
    }
    EOF
    ```
-   
+
 4. Create file  "config.yml" with following content. Execute:
 
    ```bash
@@ -236,7 +218,7 @@ wget https://raw.githubusercontent.com/wuzhuoming/tutorial_file/master/train_elm
    tuner:
      builtinTunerName: CUHKPrototypeTuner
    trial:
-     command: ./run_mass_enzh.sh
+     command: python wrap_program_mass.py
      codeDir: .
      # specific the total number of GPU
      gpuNum: 4
@@ -245,8 +227,15 @@ wget https://raw.githubusercontent.com/wuzhuoming/tutorial_file/master/train_elm
      gpuIndices: "0,1,2,3"
    EOF
    ```
-   
-5. Replace `mass/xmasked_seq2seq.py` to apply configuration from tuner and report performance metrics
+
+5. Download file "wrap_program_mass.py" in the same directory of "config.yml".
+
+   ```bash
+   wget https://raw.githubusercontent.com/wuzhuoming/tutorial_file/master/wrap_program_mass.py
+   ```
+
+6. Replace `mass/xmasked_seq2seq.py` to apply configuration from tuner and report performance metrics
+
 ```bash
 wget https://raw.githubusercontent.com/wuzhuoming/tutorial_file/master/xmasked_seq2seq.py -O mass/xmasked_seq2seq.py
 ```
@@ -352,26 +341,29 @@ nnictl resume egchD4qy # egchD4qy is the experiment id provided by the tuner whe
 ```
 
 ## Get the trained model
+
 1. The tuner execute the user training program multiple times (we call it `trial`) with different configurations.
-There are multiple trained models generated throughout the whole tuning. 
+   There are multiple trained models generated throughout the whole tuning. 
 
 2. To obtain the trained model with highest accuracy, go to the `Overview Page` and check the top 10 trials with best accuracy 
-<img src="https://lh3.googleusercontent.com/-nUV6DIuojdw/X1r3Fzve2TI/AAAAAAAAAdU/SYO259Bld24Lzhvsn7UfJu8XT7NGnpOBQCK8BGAsYHg/s0/2020-09-10.png"/>
+   <img src="https://lh3.googleusercontent.com/-nUV6DIuojdw/X1r3Fzve2TI/AAAAAAAAAdU/SYO259Bld24Lzhvsn7UfJu8XT7NGnpOBQCK8BGAsYHg/s0/2020-09-10.png"/>
 
 3. Each row of the table represent different trials. The default metrics is the accuracy. Trial with ID 'DKqsP' is the best in this example 
 
 4. The directory of the trained model is specified in the user training program. Here are the output directories of training programs:
-   
-    | Training program | output directory |
-    | ---------------- | ---------------- |
-    | ELMO | {working_dir}/output_model |
-    | mBart | {working_dir}/output_model |
-    | MASS | {working_dir}/checkpoints/mass/pretraining |
+
+   | Training program | output directory                           |
+   | ---------------- | ------------------------------------------ |
+   | ELMO             | {working_dir}/output_model                 |
+   | mBart            | {working_dir}/output_model                 |
+   | MASS             | {working_dir}/checkpoints/mass/pretraining |
 
 5. With output directory and trial ID (DKqsP), you can check the trained model by going to directory 
+
 ```
 {output directory}/DKqsP 
 ```
 
 ## Specify GPU 
+
 The number of GPU and the index of GPU are speicified in `config.yml` in the working directory. You can change `gpuNum` and `gpuIndices` to specific the gpu that the training program runs on. For details, please check the comments on the `config.yml`
