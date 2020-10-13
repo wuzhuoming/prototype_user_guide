@@ -1,22 +1,22 @@
-# **Manual for CUHKPrototypeTuner**
+# **Manual for DFHB**
 
-## Install CUHKPrototypeTuner
+## Install DFHB
 
 1. Run the following command 
 
    ```bash
    pip install nni && \
-   wget https://github.com/vincentcheny/hpo-training/releases/download/v1.3/CUHKPrototypeTuner-1.3-py3-none-any.whl && \
-   nnictl package install CUHKPrototypeTuner-1.3-py3-none-any.whl
+   wget https://github.com/vincentcheny/hpo-training/releases/download/dfhb_v1.4.1/DFHB-1.4.1-py3-none-any.whl && \
+   nnictl package install DFHB-1.4.1-py3-none-any.whl
    ```
 
 2. if success install, you should see this output  in the command line
 
    ```bash
-   Processing ./CUHKPrototypeTuner-1.3-py3-none-any.whl
-   Installing collected packages: CUHKPrototypeTuner
-   Successfully installed CUHKPrototypeTuner-1.3
-   CUHKPrototypeTuner installed!
+   Processing ./DFHB-1.4.1-py3-none-any.whl
+   Installing collected packages: DFHB
+   Successfully installed DFHB-1.4.1
+   DFHB installed!
    ```
 
 ### For ELMO 
@@ -62,7 +62,8 @@
    cat << EOF > config.yml
    authorName: lscm
    experimentName: elmo
-   trialConcurrency: 1
+   # number of trials run parallel
+   trialConcurrency: 2
    
    # Specify the maximum runing time, we specify 1 week here
    maxExecDuration: 40h 
@@ -70,24 +71,29 @@
    trainingServicePlatform: local
    searchSpacePath: search_space.json
    useAnnotation: false
-   tuner:
-     builtinTunerName: CUHKPrototypeTuner
+   advisor:
+     builtinAdvisorName: DFHB
+     classArgs:
+       random_seed: 0
+       # max budget for each trial
+       max_budget: 25
+       eta: 5
    trial:
      command: python ./bin/train_elmo.py --train_prefix=./data/one_billion/1-billion-word-language-modeling-benchmark-r13output/training-monolingual.tokenized.shuffled/* --vocab_file ./data/vocab-2016-09-10.txt --save_dir ./output_model
      codeDir: .
-     # specific the total number of GPU
-     gpuNum: 4
+     # specific the number of GPU used by each trial
+     gpuNum: 2
    localConfig:
-      # specific index of GPU just like CUDA_VISIBLE_DEVICES
-     gpuIndices: "0,1,2,3"
+     # specific index of GPU used by the experiment, just like CUDA_VISIBLE_DEVICES
+     gpuIndices: 0,1,2,3
    EOF
    ```
 
 5. Replace `bilm/training.py` and `train_elmo.py` to apply configuration from tuner and report performance metrics
 
 ```bash
-wget https://raw.githubusercontent.com/wuzhuoming/tutorial_file/master/training.py -O bilm/training.py && \
-wget https://raw.githubusercontent.com/wuzhuoming/tutorial_file/master/train_elmo.py -O bin/train_elmo.py 
+wget https://raw.githubusercontent.com/wuzhuoming/dfhb_tutorial/master/training.py -O bilm/training.py && \
+wget https://raw.githubusercontent.com/wuzhuoming/dfhb_tutorial/master/train_elmo.py -O bin/train_elmo.py 
 ```
 
 6. The tuning is ready to [start](#start-tuning) 
@@ -136,7 +142,8 @@ wget https://raw.githubusercontent.com/wuzhuoming/tutorial_file/master/train_elm
    cat << EOF > config.yml
    authorName: lscm
    experimentName: MBART
-   trialConcurrency: 1
+   # number of trials run parallel
+   trialConcurrency: 2
    
    # Specific the maximum runing time, we specific 1 week here
    maxExecDuration: 40h 
@@ -144,23 +151,27 @@ wget https://raw.githubusercontent.com/wuzhuoming/tutorial_file/master/train_elm
    trainingServicePlatform: local
    searchSpacePath: search_space.json
    useAnnotation: false
-   tuner:
-     builtinTunerName: CUHKPrototypeTuner
+   advisor:
+     builtinAdvisorName: DFHB
+     classArgs:
+       random_seed: 0
+       max_budget: 25
+       eta: 5
    trial:
      command: python wrap_program_mbart.py
      codeDir: .
-     # specific the total number of GPU
-     gpuNum: 4
+     # specific the number of GPU used by each trial
+     gpuNum: 2
    localConfig:
-      # specific index of GPU just like CUDA_VISIBLE_DEVICES
-     gpuIndices: "0,1,2,3"
+     # specific index of GPU used by the experiment, just like CUDA_VISIBLE_DEVICES
+     gpuIndices: 0,1,2,3
    EOF
    ```
 
 5. Download the tuner program "wrap_program_mbart.py"
 
    ```bash
-   wget https://raw.githubusercontent.com/wuzhuoming/tutorial_file/master/wrap_program_mbart.py 
+   wget https://raw.githubusercontent.com/wuzhuoming/dfhb_tutorial/master/wrap_program_mbart.py
    ```
 
 6. The tuning is ready to [start](#start-tuning).
@@ -207,7 +218,8 @@ wget https://raw.githubusercontent.com/wuzhuoming/tutorial_file/master/train_elm
    cat << EOF > config.yml
    authorName: lscm
    experimentName: MASS
-   trialConcurrency: 1
+   # number of trials run parallel
+   trialConcurrency: 2
    
    # Specific the maximum runing time, we specific 1 week here
    maxExecDuration: 40h 
@@ -215,29 +227,33 @@ wget https://raw.githubusercontent.com/wuzhuoming/tutorial_file/master/train_elm
    trainingServicePlatform: local
    searchSpacePath: search_space.json
    useAnnotation: false
-   tuner:
-     builtinTunerName: CUHKPrototypeTuner
+   advisor:
+     builtinAdvisorName: DFHB
+     classArgs:
+       random_seed: 0
+       max_budget: 25
+       eta: 5
    trial:
      command: python wrap_program_mass.py
      codeDir: .
-     # specific the total number of GPU
-     gpuNum: 4
+     # specific the number of GPU used by each trial
+     gpuNum: 2
    localConfig:
-      # specific index of GPU just like CUDA_VISIBLE_DEVICES
-     gpuIndices: "0,1,2,3"
+     # specific index of GPU used by the experiment, just like CUDA_VISIBLE_DEVICES
+     gpuIndices: 0,1,2,3
    EOF
    ```
 
 5. Download file "wrap_program_mass.py" in the same directory of "config.yml".
 
    ```bash
-   wget https://raw.githubusercontent.com/wuzhuoming/tutorial_file/master/wrap_program_mass.py
+   wget https://raw.githubusercontent.com/wuzhuoming/dfhb_tutorial/master/wrap_program_mass.py
    ```
 
 6. Replace `mass/xmasked_seq2seq.py` to apply configuration from tuner and report performance metrics
 
 ```bash
-wget https://raw.githubusercontent.com/wuzhuoming/tutorial_file/master/xmasked_seq2seq.py -O mass/xmasked_seq2seq.py
+wget https://raw.githubusercontent.com/wuzhuoming/dfhb_tutorial/master/xmasked_seq2seq.py -O mass/xmasked_seq2seq.py
 ```
 
 6. The tuning is ready to [start](#start-tuning) 
