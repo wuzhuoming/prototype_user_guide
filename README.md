@@ -160,7 +160,7 @@ wget https://raw.githubusercontent.com/wuzhuoming/tutorial_file/master/train_elm
 5. Download the tuner program "wrap_program_mbart.py"
 
    ```bash
-   wget https://raw.githubusercontent.com/wuzhuoming/tutorial_file/master/wrap_program_mbart.py 
+   wget https://raw.githubusercontent.com/wuzhuoming/tutorial_file/add_cuda_cache_clear/wrap_program_mbart.py
    ```
 
 6. The tuning is ready to [start](#start-tuning).
@@ -231,7 +231,7 @@ wget https://raw.githubusercontent.com/wuzhuoming/tutorial_file/master/train_elm
 5. Download file "wrap_program_mass.py" in the same directory of "config.yml".
 
    ```bash
-   wget https://raw.githubusercontent.com/wuzhuoming/tutorial_file/master/wrap_program_mass.py
+   wget https://raw.githubusercontent.com/wuzhuoming/tutorial_file/add_cuda_cache_clear/wrap_program_mass.py
    ```
 
 6. Replace `mass/xmasked_seq2seq.py` to apply configuration from tuner and report performance metrics
